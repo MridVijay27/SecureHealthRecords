@@ -1,4 +1,3 @@
-
 # Login screen for the Secure Health Records application.
 
 import tkinter as tk
@@ -9,7 +8,7 @@ from gui.helpers import clear_window
 
 
 def show_login(window):
-    # Displays the login form and clears any previous screen.
+    # Displays the login form and clears the previous screen.
     clear_window(window)
 
     frame = tk.Frame(window, padx=30, pady=30)
@@ -21,16 +20,20 @@ def show_login(window):
         font=("Arial", 20, "bold")
     ).pack(pady=15)
 
-    tk.Label(frame, text="Username").pack(anchor="w")
+    # Keep all form fields inside one frame so they align correctly.
+    form_frame = tk.Frame(frame)
+    form_frame.pack(pady=15)
 
-    username_entry = tk.Entry(frame, width=30)
-    username_entry.pack(pady=5)
+    tk.Label(form_frame, text="Username").pack(anchor="w")
 
-    tk.Label(frame, text="Password").pack(anchor="w")
+    username_entry = tk.Entry(form_frame, width=30)
+    username_entry.pack(pady=5, anchor="w")
 
-    # Hide password characters from anyone looking at the screen.
-    password_entry = tk.Entry(frame, width=30, show="*")
-    password_entry.pack(pady=5)
+    tk.Label(form_frame, text="Password").pack(anchor="w")
+
+    # Hide the password from anyone looking at the screen.
+    password_entry = tk.Entry(form_frame, width=30, show="*")
+    password_entry.pack(pady=5, anchor="w")
 
     def handle_login():
         # Checks the entered credentials and displays the login result.
@@ -66,17 +69,21 @@ def show_login(window):
             messagebox.showerror("Login Failed", message)
             password_entry.delete(0, tk.END)
 
+    def go_to_register():
+        # Import here to avoid circular imports between GUI screens.
+        from gui.register_screen import show_register
+        show_register(window)
+
     tk.Button(
         frame,
         text="Login",
         width=20,
         command=handle_login
-    ).pack(pady=15)
+    ).pack(pady=10)
 
-    # Registration will be connected when the register screen is ready.
     tk.Button(
         frame,
         text="Register",
         width=20,
-        state="disabled"
+        command=go_to_register
     ).pack(pady=5)
