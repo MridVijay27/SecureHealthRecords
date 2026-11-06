@@ -27,13 +27,13 @@ def show_dashboard(window, user):
     ).pack(pady=10)
 
     def coming_soon(feature_name):
-        # Temporary message until the other team features are connected.
+        # Temporary placeholders until the other team features are connected.
         messagebox.showinfo(
             feature_name,
             feature_name + " will be available soon."
         )
 
-    # Show different features depending on the user's role.
+    # Display features according to the user's role.
     if user["role"] == "patient":
         tk.Button(
             frame,
@@ -57,18 +57,23 @@ def show_dashboard(window, user):
             command=lambda: coming_soon("Shared With Me")
         ).pack(pady=8)
 
+    def open_audit_log():
+        # Import here to avoid circular imports between GUI screens.
+        from gui.audit_screen import show_audit_screen
+        show_audit_screen(window, user)
+
     tk.Button(
         frame,
         text="Audit Log",
         width=25,
-        command=lambda: coming_soon("Audit Log")
+        command=open_audit_log
     ).pack(pady=8)
 
     def handle_logout():
         # Record logout before returning to the login screen.
         audit_log.log_event(user["username"], "LOGOUT")
 
-        #import here to avoid circular imports between the GUI screens.
+        # Import here to avoid circular imports between GUI screens.
         from gui.login_screen import show_login
         show_login(window)
 
