@@ -20,7 +20,7 @@ def show_login(window):
         font=("Arial", 20, "bold")
     ).pack(pady=15)
 
-    # Keep all form fields inside one frame so they align correctly.
+    # Keep the form fields together so labels and boxes align correctly.
     form_frame = tk.Frame(frame)
     form_frame.pack(pady=15)
 
@@ -36,7 +36,7 @@ def show_login(window):
     password_entry.pack(pady=5, anchor="w")
 
     def handle_login():
-        # Checks the entered credentials and displays the login result.
+        # Checks the entered credentials and opens the dashboard.
         username = username_entry.get()
         password = password_entry.get()
 
@@ -45,25 +45,9 @@ def show_login(window):
         if success:
             messagebox.showinfo("Login", message)
 
-            # Temporary welcome screen until the dashboard is created.
-            clear_window(window)
-
-            tk.Label(
-                window,
-                text="Welcome, " + user["username"],
-                font=("Arial", 18, "bold")
-            ).pack(pady=40)
-
-            tk.Label(
-                window,
-                text="Role: " + user["role"]
-            ).pack(pady=10)
-
-            tk.Button(
-                window,
-                text="Logout",
-                command=lambda: show_login(window)
-            ).pack(pady=20)
+            # Import here to avoid circular imports between screens.
+            from gui.dashboard import show_dashboard
+            show_dashboard(window, user)
 
         else:
             messagebox.showerror("Login Failed", message)
