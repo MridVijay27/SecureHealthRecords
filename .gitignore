@@ -210,11 +210,11 @@ tempCodeRunnerFile.py
 
 # PyPI configuration file
 .pypirc
-   # Our project: never upload data or keys
-   data/
-   *.db
-   *.pem
-   *.key
+# Our project: never upload data or keys
+data/
+*.db
+*.pem
+*.key
 
 # Marimo
 marimo/_static/
