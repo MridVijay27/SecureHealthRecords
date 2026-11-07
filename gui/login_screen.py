@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from auth import accounts
-from gui.helpers import clear_window
+from gui.helpers import clear_window, TITLE_FONT, ENTRY_WIDTH, BUTTON_WIDTH
 
 
 def show_login(window):
@@ -17,7 +17,7 @@ def show_login(window):
     tk.Label(
         frame,
         text="Secure Health Records",
-        font=("Arial", 20, "bold")
+        font=TITLE_FONT
     ).pack(pady=15)
 
     # Keep the form fields together so labels and boxes align correctly.
@@ -26,13 +26,17 @@ def show_login(window):
 
     tk.Label(form_frame, text="Username").pack(anchor="w")
 
-    username_entry = tk.Entry(form_frame, width=30)
+    username_entry = tk.Entry(form_frame, width=ENTRY_WIDTH)
     username_entry.pack(pady=5, anchor="w")
 
     tk.Label(form_frame, text="Password").pack(anchor="w")
 
     # Hide the password from anyone looking at the screen.
-    password_entry = tk.Entry(form_frame, width=30, show="*")
+    password_entry = tk.Entry(
+        form_frame,
+        width=ENTRY_WIDTH,
+        show="*"
+    )
     password_entry.pack(pady=5, anchor="w")
 
     def handle_login():
@@ -61,13 +65,13 @@ def show_login(window):
     tk.Button(
         frame,
         text="Login",
-        width=20,
+        width=BUTTON_WIDTH,
         command=handle_login
     ).pack(pady=10)
 
     tk.Button(
         frame,
         text="Register",
-        width=20,
+        width=BUTTON_WIDTH,
         command=go_to_register
     ).pack(pady=5)

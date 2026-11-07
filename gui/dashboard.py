@@ -4,7 +4,12 @@ import tkinter as tk
 from tkinter import messagebox
 
 from auth import audit_log
-from gui.helpers import clear_window
+from gui.helpers import (
+    clear_window,
+    TITLE_FONT,
+    SUBTITLE_FONT,
+    MENU_BUTTON_WIDTH
+)
 
 
 def show_dashboard(window, user):
@@ -17,13 +22,13 @@ def show_dashboard(window, user):
     tk.Label(
         frame,
         text="Welcome, " + user["username"],
-        font=("Arial", 20, "bold")
+        font=TITLE_FONT
     ).pack(pady=15)
 
     tk.Label(
         frame,
         text="Role: " + user["role"].capitalize(),
-        font=("Arial", 12)
+        font=SUBTITLE_FONT
     ).pack(pady=10)
 
     def coming_soon(feature_name):
@@ -38,14 +43,14 @@ def show_dashboard(window, user):
         tk.Button(
             frame,
             text="My Records",
-            width=25,
+            width=MENU_BUTTON_WIDTH,
             command=lambda: coming_soon("My Records")
         ).pack(pady=8)
 
         tk.Button(
             frame,
             text="Share a Record",
-            width=25,
+            width=MENU_BUTTON_WIDTH,
             command=lambda: coming_soon("Share a Record")
         ).pack(pady=8)
 
@@ -53,7 +58,7 @@ def show_dashboard(window, user):
         tk.Button(
             frame,
             text="Shared With Me",
-            width=25,
+            width=MENU_BUTTON_WIDTH,
             command=lambda: coming_soon("Shared With Me")
         ).pack(pady=8)
 
@@ -65,7 +70,7 @@ def show_dashboard(window, user):
     tk.Button(
         frame,
         text="Audit Log",
-        width=25,
+        width=MENU_BUTTON_WIDTH,
         command=open_audit_log
     ).pack(pady=8)
 
@@ -80,6 +85,6 @@ def show_dashboard(window, user):
     tk.Button(
         frame,
         text="Logout",
-        width=25,
+        width=MENU_BUTTON_WIDTH,
         command=handle_logout
     ).pack(pady=15)

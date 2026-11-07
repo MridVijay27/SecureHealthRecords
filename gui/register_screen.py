@@ -4,7 +4,14 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from auth import accounts
-from gui.helpers import clear_window
+from gui.helpers import (
+    clear_window,
+    TITLE_FONT,
+    HINT_FONT,
+    ENTRY_WIDTH,
+    BUTTON_WIDTH,
+    HINT_COLOUR
+)
 
 
 def show_register(window):
@@ -17,36 +24,48 @@ def show_register(window):
     tk.Label(
         frame,
         text="Create Account",
-        font=("Arial", 20, "bold")
+        font=TITLE_FONT
     ).pack(pady=15)
 
-    tk.Label(frame, text="Username").pack(anchor="w")
+    # Keep all registration fields aligned on the left.
+    form_frame = tk.Frame(frame)
+    form_frame.pack(pady=10)
 
-    username_entry = tk.Entry(frame, width=30)
+    tk.Label(form_frame, text="Username").pack(anchor="w")
+
+    username_entry = tk.Entry(form_frame, width=ENTRY_WIDTH)
     username_entry.pack(pady=5, anchor="w")
 
-    tk.Label(frame, text="Password").pack(anchor="w")
+    tk.Label(form_frame, text="Password").pack(anchor="w")
 
     # Hide passwords so they cannot be read by someone looking at the screen.
-    password_entry = tk.Entry(frame, width=30, show="*")
+    password_entry = tk.Entry(
+        form_frame,
+        width=ENTRY_WIDTH,
+        show="*"
+    )
     password_entry.pack(pady=5, anchor="w")
 
-    tk.Label(frame, text="Confirm Password").pack(anchor="w")
+    tk.Label(form_frame, text="Confirm Password").pack(anchor="w")
 
-    confirm_entry = tk.Entry(frame, width=30, show="*")
+    confirm_entry = tk.Entry(
+        form_frame,
+        width=ENTRY_WIDTH,
+        show="*"
+    )
     confirm_entry.pack(pady=5, anchor="w")
 
     tk.Label(
-        frame,
+        form_frame,
         text="10+ characters, uppercase, lowercase and a number",
-        font=("Arial", 9),
-        fg="gray"
-    ).pack(pady=5)
+        font=HINT_FONT,
+        fg=HINT_COLOUR
+    ).pack(pady=5, anchor="w")
 
-    tk.Label(frame, text="Role").pack(anchor="w")
+    tk.Label(form_frame, text="Role").pack(anchor="w")
 
     role_box = ttk.Combobox(
-        frame,
+        form_frame,
         values=["Patient", "Doctor"],
         state="readonly",
         width=27
@@ -55,7 +74,7 @@ def show_register(window):
     role_box.current(0)
 
     def go_to_login():
-        # Import here to avoid circular imports between the GUI screens.
+        # Import here to avoid circular imports between GUI screens.
         from gui.login_screen import show_login
         show_login(window)
 
@@ -88,13 +107,13 @@ def show_register(window):
     tk.Button(
         frame,
         text="Register",
-        width=20,
+        width=BUTTON_WIDTH,
         command=handle_register
-    ).pack(pady=15)
+    ).pack(pady=10)
 
     tk.Button(
         frame,
         text="Back to Login",
-        width=20,
+        width=BUTTON_WIDTH,
         command=go_to_login
     ).pack(pady=5)

@@ -4,7 +4,14 @@ import tkinter as tk
 from tkinter import ttk
 
 from auth import audit_log
-from gui.helpers import clear_window
+from gui.helpers import (
+    clear_window,
+    TITLE_FONT,
+    RESULT_FONT,
+    BUTTON_WIDTH,
+    SUCCESS_COLOUR,
+    ERROR_COLOUR
+)
 
 
 def show_audit_screen(window, user):
@@ -17,7 +24,7 @@ def show_audit_screen(window, user):
     tk.Label(
         frame,
         text="Audit Log",
-        font=("Arial", 20, "bold")
+        font=TITLE_FONT
     ).pack(pady=10)
 
     table_frame = tk.Frame(frame)
@@ -73,7 +80,7 @@ def show_audit_screen(window, user):
     result_label = tk.Label(
         frame,
         text="",
-        font=("Arial", 12, "bold")
+        font=RESULT_FONT
     )
     result_label.pack(pady=8)
 
@@ -84,12 +91,12 @@ def show_audit_screen(window, user):
         if valid:
             result_label.config(
                 text="Log intact: no tampering detected",
-                fg="green"
+                fg=SUCCESS_COLOUR
             )
         else:
             result_label.config(
                 text="Tampering detected at entry #" + str(broken_id),
-                fg="red"
+                fg=ERROR_COLOUR
             )
 
     def go_back():
@@ -100,13 +107,13 @@ def show_audit_screen(window, user):
     tk.Button(
         frame,
         text="Verify Log",
-        width=20,
+        width=BUTTON_WIDTH,
         command=handle_verify
     ).pack(pady=5)
 
     tk.Button(
         frame,
         text="Back",
-        width=20,
+        width=BUTTON_WIDTH,
         command=go_back
     ).pack(pady=5)
