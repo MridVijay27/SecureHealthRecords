@@ -9,7 +9,7 @@ from Crypto.Random import get_random_bytes
 from records.record_crypto import derive_key, encrypt, decrypt
 from records.attachments import encrypt_file, decrypt_file
 
-from records import record_store
+from records import record_store, tamper_demo
 from auth import audit_log
 import db
 
@@ -136,6 +136,22 @@ class TestRecordStore(unittest.TestCase):
         self.assertIn("RECORD_CREATED", actions)
         self.assertIn("RECORD_OPENED", actions)
         self.assertTrue(audit_log.verify_chain()[0])
+
+    # Test 13: the tamper demo detects the change and then restores the record
+    def test_tamper_demo(self):
+        detected = tamper_demo.simulate_tampering(
+            self.record_id, "alice", "GoodPass123"
+        )
+        self.assertTrue(detected)
+
+        text = record_store.open_record(self.record_id, "alice", "GoodPass123")
+        self.assertEqual(text, "Haemoglobin normal")
+
+    # Test 14: a tampered record stays unreadable until it is restored
+    def test_tampered_record_rejected(self):
+        tamper_demo.flip_one_bit(self.record_id)
+        with self.assertRaises(ValueError):
+            record_store.open_record(self.record_id, "alice", "GoodPass123")
 
 if __name__ == "__main__":
     unittest.main()
