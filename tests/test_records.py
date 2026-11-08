@@ -9,6 +9,10 @@ from Crypto.Random import get_random_bytes
 from records.record_crypto import derive_key, encrypt, decrypt
 from records.attachments import encrypt_file, decrypt_file
 
+from records import record_store
+from auth import audit_log
+import db
+
 
 class TestRecordCrypto(unittest.TestCase):
 
@@ -74,6 +78,64 @@ class TestAttachments(unittest.TestCase):
             decrypt_file(self.key, nonce, bytes(tampered), tag, self.restored)
         self.assertFalse(os.path.exists(self.restored))
 
+
+class TestRecordStore(unittest.TestCase):
+
+    def setUp(self):
+        # Use a separate database so tests do not change real records.
+        self.test_dir = tempfile.TemporaryDirectory()
+        self.original_db_path = db.DB_PATH
+        db.DB_PATH = os.path.join(self.test_dir.name, "test_health.db")
+
+        audit_log.create_audit_table()
+        record_store.create_records_table()
+
+        self.record_id = record_store.create_record(
+            "alice", "GoodPass123", "Blood test", "Haemoglobin normal"
+        )
+
+    def tearDown(self):
+        # Restore the original database path after each test.
+        db.DB_PATH = self.original_db_path
+        self.test_dir.cleanup()
+
+    # Test 7: a saved record opens with the right password
+    def test_create_and_open(self):
+        text = record_store.open_record(self.record_id, "alice", "GoodPass123")
+        self.assertEqual(text, "Haemoglobin normal")
+
+    # Test 8: the database stores ciphertext, never the plain text
+    def test_text_not_stored_in_plain(self):
+        conn = db.get_connection()
+        ciphertext = conn.execute(
+            "SELECT ciphertext FROM records WHERE id = ?", (self.record_id,)
+        ).fetchone()[0]
+        conn.close()
+        self.assertNotIn(b"Haemoglobin", ciphertext)
+
+    # Test 9: the wrong password cannot open the record
+    def test_wrong_password_rejected(self):
+        with self.assertRaises(ValueError):
+            record_store.open_record(self.record_id, "alice", "WrongPass123")
+
+    # Test 10: another patient cannot open someone else's record
+    def test_other_patient_rejected(self):
+        with self.assertRaises(ValueError):
+            record_store.open_record(self.record_id, "bob", "GoodPass123")
+
+    # Test 11: an edited record opens with the new text
+    def test_edit_record(self):
+        record_store.edit_record(self.record_id, "alice", "GoodPass123", "Iron low")
+        text = record_store.open_record(self.record_id, "alice", "GoodPass123")
+        self.assertEqual(text, "Iron low")
+
+    # Test 12: creating and opening records writes to a valid audit log
+    def test_audit_log_written(self):
+        record_store.open_record(self.record_id, "alice", "GoodPass123")
+        actions = [entry[3] for entry in audit_log.get_all_entries()]
+        self.assertIn("RECORD_CREATED", actions)
+        self.assertIn("RECORD_OPENED", actions)
+        self.assertTrue(audit_log.verify_chain()[0])
 
 if __name__ == "__main__":
     unittest.main()
