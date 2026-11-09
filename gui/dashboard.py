@@ -11,6 +11,10 @@ from gui.helpers import (
     MENU_BUTTON_WIDTH
 )
 
+from gui.records_screen import show_records_screen
+from gui.sharing_screen import show_sharing_screen
+from gui.doctor_screen import show_doctor_screen
+
 
 def show_dashboard(window, user):
     # Displays the dashboard for the logged-in user.
@@ -44,14 +48,14 @@ def show_dashboard(window, user):
             frame,
             text="My Records",
             width=MENU_BUTTON_WIDTH,
-            command=lambda: coming_soon("My Records")
+            command=lambda: show_records_screen(window, user)
         ).pack(pady=8)
 
         tk.Button(
             frame,
             text="Share a Record",
             width=MENU_BUTTON_WIDTH,
-            command=lambda: coming_soon("Share a Record")
+            command=lambda: show_sharing_screen(window, user)
         ).pack(pady=8)
 
     elif user["role"] == "doctor":
@@ -59,7 +63,7 @@ def show_dashboard(window, user):
             frame,
             text="Shared With Me",
             width=MENU_BUTTON_WIDTH,
-            command=lambda: coming_soon("Shared With Me")
+            command=lambda: show_doctor_screen(window, user)
         ).pack(pady=8)
 
     def open_audit_log():

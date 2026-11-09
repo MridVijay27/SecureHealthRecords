@@ -1,5 +1,6 @@
 import db
 from datetime import datetime
+from sharing import key_manager
 
 def create_sharing_tables():
     """Create the database tables required for secure record sharing."""
@@ -246,3 +247,34 @@ def get_record_notes(record_id):
     conn.close()
 
     return rows
+
+
+def setup_doctor_keys(doctor, password):
+    """Generate and securely store keys for a doctor if they do not exist."""
+
+    conn = db.get_connection()
+
+    row = conn.execute(
+        "SELECT doctor FROM doctor_keys WHERE doctor = ?",
+        (doctor,)
+    ).fetchone()
+
+    conn.close()
+
+    if row is not None:
+        return False
+
+    private_key, public_key = key_manager.generate_key_pair()
+
+    encrypted_private_key = key_manager.encrypt_private_key(
+        private_key,
+        password
+    )
+
+    save_doctor_keys(
+        doctor,
+        public_key,
+        encrypted_private_key
+    )
+
+    return True

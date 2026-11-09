@@ -86,15 +86,10 @@ def wrap_record_key(record_key, doctor_public_key):
     return cipher.encrypt(record_key)
 
 def unwrap_record_key(wrapped_key, doctor_private_key):
-    """
-    Decrypt a shared record's AES key using the doctor's RSA private key.
-    """
+    if isinstance(doctor_private_key, RSA.RsaKey):
+        private_key = doctor_private_key
+    else:
+        private_key = RSA.import_key(doctor_private_key)
 
-    private_key = RSA.import_key(doctor_private_key)
-
-    cipher = PKCS1_OAEP.new(
-        private_key,
-        hashAlgo=SHA256
-    )
-
+    cipher = PKCS1_OAEP.new(private_key, hashAlgo=SHA256)
     return cipher.decrypt(wrapped_key)
