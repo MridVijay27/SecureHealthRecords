@@ -3,6 +3,7 @@ from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
+from Crypto.Cipher import PKCS1_OAEP
 
 def generate_key_pair():
     """
@@ -69,3 +70,31 @@ def decrypt_private_key(encrypted_data, password):
     )
 
     return RSA.import_key(private_key)
+
+def wrap_record_key(record_key, doctor_public_key):
+    """
+    Encrypt a record's AES key using the doctor's RSA public key.
+    """
+
+    public_key = RSA.import_key(doctor_public_key)
+
+    cipher = PKCS1_OAEP.new(
+        public_key,
+        hashAlgo=SHA256
+    )
+
+    return cipher.encrypt(record_key)
+
+def unwrap_record_key(wrapped_key, doctor_private_key):
+    """
+    Decrypt a shared record's AES key using the doctor's RSA private key.
+    """
+
+    private_key = RSA.import_key(doctor_private_key)
+
+    cipher = PKCS1_OAEP.new(
+        private_key,
+        hashAlgo=SHA256
+    )
+
+    return cipher.decrypt(wrapped_key)
