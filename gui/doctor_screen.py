@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 
@@ -13,6 +12,8 @@ from gui.helpers import (
 )
 from sharing import share_store
 from sharing import key_manager
+from sharing import signatures
+from datetime import datetime
 from records import record_store
 
 
@@ -76,6 +77,169 @@ def show_doctor_screen(window, user):
         font=SUBTITLE_FONT
     ).pack(pady=5)
 
+    def show_record_details(record_id, patient, record_text):
+        details_window = tk.Toplevel(window)
+        details_window.title("Patient Record and Medical Notes")
+        details_window.geometry("600x600")
+
+        tk.Label(
+            details_window,
+            text=f"Patient: {patient}",
+            font=SUBTITLE_FONT
+        ).pack(pady=10)
+
+        tk.Label(
+            details_window,
+            text="Patient Record",
+            font=SUBTITLE_FONT
+        ).pack(pady=5)
+
+        record_display = tk.Text(
+            details_window,
+            height=8,
+            width=65,
+            wrap="word"
+        )
+        record_display.pack(padx=10, pady=5)
+        record_display.insert("1.0", record_text)
+        record_display.config(state="disabled")
+
+        tk.Label(
+            details_window,
+            text="Doctor's Medical Note",
+            font=SUBTITLE_FONT
+        ).pack(pady=10)
+
+        note_input = tk.Text(
+            details_window,
+            height=6,
+            width=65,
+            wrap="word"
+        )
+        note_input.pack(padx=10, pady=5)
+
+
+        def sign_and_save_note():
+            note_text = note_input.get("1.0", "end-1c").strip()
+
+            if not note_text:
+                messagebox.showerror(
+                    "Empty Note",
+                    "Please enter a medical note before signing."
+                )
+                return
+
+            password = simpledialog.askstring(
+                "Confirm Identity",
+                "Re-enter your password to sign this note:",
+                show="*"
+            )
+
+            if not password:
+                return
+
+            try:
+                encrypted_data = share_store.get_encrypted_private_key(doctor)
+
+                private_key = key_manager.decrypt_private_key(
+                    encrypted_data,
+                    password
+                )
+
+                signature = signatures.sign_note(
+                    note_text,
+                    private_key
+                )
+
+                share_store.save_note(
+                    record_id,
+                    doctor,
+                    note_text,
+                    signature
+                )
+
+                messagebox.showinfo(
+                    "Note Signed",
+                    "Your medical note has been digitally signed and saved."
+                )
+
+                note_input.config(state="disabled")
+
+            except Exception:
+                messagebox.showerror(
+                    "Signing Failed",
+                    "Could not sign the note. Please check your password."
+                )
+        tk.Button(
+            details_window,
+            text="Save & Sign Note",
+            width=BUTTON_WIDTH,
+            command=sign_and_save_note
+        ).pack(pady=10)
+
+        def verify_saved_notes():
+            notes = share_store.get_record_notes(record_id)
+
+            if not notes:
+                messagebox.showinfo(
+                    "Medical Notes",
+                    "No medical notes have been saved for this record."
+                )
+                return
+
+            notes_window = tk.Toplevel(details_window)
+            notes_window.title("Saved Medical Notes")
+            notes_window.geometry("600x500")
+
+            for note_doctor, note_text, created, signature in notes:
+
+                tk.Label(
+                    notes_window,
+                    text=f"Doctor: {note_doctor} | Date: {created}",
+                    font=SUBTITLE_FONT
+                ).pack(pady=5)
+
+                note_display = tk.Text(
+                    notes_window,
+                    height=4,
+                    width=65,
+                    wrap="word"
+                )
+                note_display.pack(padx=10, pady=5)
+                note_display.insert("1.0", note_text)
+                note_display.config(state="disabled")
+
+                try:
+                    public_key = share_store.get_doctor_public_key(
+                        note_doctor
+                    )
+
+                    valid = signatures.verify_signature(
+                        note_text,
+                        signature,
+                        public_key
+                    )
+
+                    if valid:
+                        result = "Signature VALID"
+                    else:
+                        result = "Signature INVALID"
+
+                except Exception:
+                    result = "Signature could not be verified"
+
+                tk.Label(
+                    notes_window,
+                    text=result
+                ).pack(pady=5)
+
+        tk.Button(
+            details_window,
+            text="View Saved Notes & Verify Signatures",
+            width=40,
+            command=verify_saved_notes
+        ).pack(pady=10)
+
     # Retrieve records shared with this doctor.
     try:
         shares = share_store.get_doctor_shares(doctor)
@@ -127,9 +291,10 @@ def show_doctor_screen(window, user):
                         record_key
                     )
 
-                    messagebox.showinfo(
-                        "Patient Record",
-                        f"Patient: {share['patient']}\n\n{record_text}"
+                    show_record_details(
+                        selected_record_id,
+                        share["patient"],
+                        record_text
                     )
 
                 except Exception:

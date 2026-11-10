@@ -1,5 +1,3 @@
-
-
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from auth import audit_log
@@ -190,6 +188,126 @@ def show_sharing_screen(window, user):
         text="Share Record",
         width=BUTTON_WIDTH,
         command=handle_share
+    ).pack(pady=5)
+
+        # Display records currently shared with doctors.
+    tk.Label(
+        frame,
+        text="Currently Shared Records",
+        font=SUBTITLE_FONT
+    ).pack(pady=10)
+
+    share_options = {}
+
+    share_dropdown = ttk.Combobox(
+        frame,
+        values=[],
+        state="readonly",
+        width=40
+    )
+    share_dropdown.pack(pady=5)
+
+    def refresh_shares():
+        # Get all active shares belonging to this patient.
+        shares = share_store.get_patient_shares(patient)
+
+        # Clear the existing dropdown options.
+        share_options.clear()
+
+        display_options = []
+
+        for record_id, doctor, created in shares:
+            display_text = (
+                f"Record {record_id} - {doctor} ({created})"
+            )
+
+            display_options.append(display_text)
+            share_options[display_text] = (record_id, doctor)
+
+        # Update the dropdown.
+        share_dropdown["values"] = display_options
+
+        if display_options:
+            share_dropdown.current(0)
+        else:
+            share_dropdown.set("")
+
+    # Load the shares when the screen opens.
+    refresh_shares()
+
+
+    def handle_revoke():
+        selected_share = share_dropdown.get()
+
+        if not selected_share:
+            messagebox.showerror(
+                "No Share Selected",
+                "Please select a shared record to revoke."
+            )
+            return
+
+        password = simpledialog.askstring(
+            "Patient Verification",
+            "Re-enter your password to revoke access:",
+            show="*"
+        )
+
+        if not password:
+            return
+
+        try:
+            success, message, verified_user = accounts.login(
+                patient,
+                password
+            )
+
+            if not success:
+                messagebox.showerror("Verification Failed", message)
+                return
+
+            confirmed = messagebox.askyesno(
+                "Confirm Revocation",
+                "Are you sure you want to revoke this doctor's access?"
+            )
+
+            if not confirmed:
+                return
+
+            record_id, doctor = share_options[selected_share]
+
+            revoked = share_store.revoke_share(
+                record_id,
+                patient,
+                doctor
+            )
+
+            if revoked:
+                audit_log.log_event(patient, "SHARE_REVOKED")
+
+                messagebox.showinfo(
+                    "Access Revoked",
+                    f"{doctor} can no longer access this shared record."
+                )
+
+                refresh_shares()
+
+            else:
+                messagebox.showerror(
+                    "Revocation Failed",
+                    "The share could not be found or is already revoked."
+                )
+
+        except Exception:
+            messagebox.showerror(
+                "Revocation Failed",
+                "An unexpected error occurred while revoking access."
+            )
+
+    tk.Button(
+        frame,
+        text="Revoke Access",
+        width=BUTTON_WIDTH,
+        command=handle_revoke
     ).pack(pady=5)
 
     tk.Button(

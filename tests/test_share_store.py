@@ -1,4 +1,3 @@
-
 import os
 import tempfile
 import unittest
@@ -106,6 +105,23 @@ class TestShareStore(unittest.TestCase):
         # Retrieving the revoked share should raise an error.
         with self.assertRaises(ValueError):
             share_store.get_active_share(record_id, doctor)
+
+
+    def test_get_patient_shares(self):
+        # Create two shares for Alice and one for another patient.
+        share_store.create_share(1, "alice", "doctor1", b"key1")
+        share_store.create_share(2, "alice", "doctor2", b"key2")
+        share_store.create_share(3, "bob", "doctor1", b"key3")
+
+        # Revoke one of Alice's shares.
+        share_store.revoke_share(2, "alice", "doctor2")
+
+        # Retrieve Alice's active shares.
+        shares = share_store.get_patient_shares("alice")
+
+        self.assertEqual(len(shares), 1)
+        self.assertEqual(shares[0][0], 1)
+        self.assertEqual(shares[0][1], "doctor1")
 
 
     def test_save_and_retrieve_note(self):

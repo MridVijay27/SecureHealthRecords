@@ -166,6 +166,24 @@ def get_doctor_shares(doctor):
     return rows
 
 
+
+def get_patient_shares(patient):
+    """Retrieve all active shares belonging to a patient."""
+
+    conn = db.get_connection()
+
+    rows = conn.execute("""
+        SELECT record_id, doctor, created
+        FROM shares
+        WHERE patient = ? AND revoked = 0
+        ORDER BY created DESC
+    """, (patient,)).fetchall()
+
+    conn.close()
+
+    return rows
+
+
 def revoke_share(record_id, patient, doctor):
     """Revoke a doctor's access to a shared record."""
 
