@@ -1,7 +1,6 @@
 # Displays the dashboard based on the logged-in user's role.
 
 import tkinter as tk
-from tkinter import messagebox
 
 from auth import audit_log
 from gui.helpers import (
@@ -10,10 +9,6 @@ from gui.helpers import (
     SUBTITLE_FONT,
     MENU_BUTTON_WIDTH
 )
-
-from gui.records_screen import show_records_screen
-from gui.sharing_screen import show_sharing_screen
-from gui.doctor_screen import show_doctor_screen
 
 
 def show_dashboard(window, user):
@@ -35,17 +30,20 @@ def show_dashboard(window, user):
         font=SUBTITLE_FONT
     ).pack(pady=10)
 
-    def coming_soon(feature_name):
-        # Temporary placeholders until the other team features are connected.
-        messagebox.showinfo(
-            feature_name,
-            feature_name + " will be available soon."
-        )
-
     def open_records():
         # Import here to avoid circular imports between GUI screens.
         from gui.records_screen import show_records_screen
         show_records_screen(window, user)
+
+    def open_sharing():
+        # Import here to avoid circular imports between GUI screens.
+        from gui.sharing_screen import show_sharing_screen
+        show_sharing_screen(window, user)
+
+    def open_doctor_screen():
+        # Import here to avoid circular imports between GUI screens.
+        from gui.doctor_screen import show_doctor_screen
+        show_doctor_screen(window, user)
 
     # Display features according to the user's role.
     if user["role"] == "patient":
@@ -53,14 +51,14 @@ def show_dashboard(window, user):
             frame,
             text="My Records",
             width=MENU_BUTTON_WIDTH,
-            command=lambda: show_records_screen(window, user)
+            command=open_records
         ).pack(pady=8)
 
         tk.Button(
             frame,
             text="Share a Record",
             width=MENU_BUTTON_WIDTH,
-            command=lambda: show_sharing_screen(window, user)
+            command=open_sharing
         ).pack(pady=8)
 
     elif user["role"] == "doctor":
@@ -68,7 +66,7 @@ def show_dashboard(window, user):
             frame,
             text="Shared With Me",
             width=MENU_BUTTON_WIDTH,
-            command=lambda: show_doctor_screen(window, user)
+            command=open_doctor_screen
         ).pack(pady=8)
 
     def open_audit_log():
