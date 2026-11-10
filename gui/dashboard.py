@@ -42,6 +42,11 @@ def show_dashboard(window, user):
             feature_name + " will be available soon."
         )
 
+    def open_records():
+        # Import here to avoid circular imports between GUI screens.
+        from gui.records_screen import show_records_screen
+        show_records_screen(window, user)
+
     # Display features according to the user's role.
     if user["role"] == "patient":
         tk.Button(
