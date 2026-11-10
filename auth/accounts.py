@@ -183,3 +183,25 @@ def login(username, password):
         "username": username,
         "role": role
     }
+
+
+def get_users_by_role(role):
+    """Retrieve usernames belonging to a specific role."""
+
+    role = role.strip().lower()
+
+    if role not in ALLOWED_ROLES:
+        return []
+
+    conn = db.get_connection()
+
+    users = conn.execute("""
+        SELECT username
+        FROM users
+        WHERE role = ?
+        ORDER BY username
+    """, (role,)).fetchall()
+
+    conn.close()
+
+    return [user[0] for user in users]

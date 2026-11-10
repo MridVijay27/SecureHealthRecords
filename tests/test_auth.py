@@ -190,5 +190,18 @@ class TestAuthentication(unittest.TestCase):
         self.assertEqual(broken_id, 3)
 
 
+    def test_get_users_by_role(self):
+        from auth import accounts
+
+        accounts.register("alice", "PatientPass123!", "patient")
+        accounts.register("doctor1", "DoctorPass123!", "doctor")
+        accounts.register("doctor2", "DoctorPass456!", "doctor")
+
+        doctors = accounts.get_users_by_role("doctor")
+
+        self.assertEqual(doctors, ["doctor1", "doctor2"])
+        self.assertNotIn("alice", doctors)
+
+
 if __name__ == "__main__":
     unittest.main()

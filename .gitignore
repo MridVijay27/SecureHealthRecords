@@ -215,6 +215,10 @@ data/
 *.db
 *.pem
 *.key
+<<<<<<< HEAD
+*.sqlite3
+=======
+>>>>>>> origin/main
 
 # Marimo
 marimo/_static/
